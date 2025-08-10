@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Panels found:', Object.entries(panels).map(([k, v]) => `${k}: ${v ? 'found' : 'missing'}`));
 
   function setActiveSidebarItem(targetKey) {
+    if (!sidebarList) return;
     const items = sidebarList.querySelectorAll('.sidebar-item');
     items.forEach((li) => {
       if (li.dataset.target === targetKey) {
@@ -83,6 +84,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function initializeAccordions() {
     console.log('Initializing accordions...');
     document.querySelectorAll('.accordion').forEach((acc, index) => {
+      // Reset any previously active items to avoid multiple open sections
+      acc
+        .querySelectorAll('.accordion-item.active')
+        .forEach((item) => item.classList.remove('active'));
+
       // Find the first accordion item and make it active
       const firstItem = acc.querySelector('.accordion-item');
       if (firstItem) {
