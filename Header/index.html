@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India Post - Employee Portal</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Top Header Section -->
+    <header class="top-header" id="topHeader">
+        <!-- Left Section: Logo and Emblem -->
+        <div class="header-left">
+            <div class="logo-section">
+                <img src="india-post-logo.png" alt="India Post Logo" class="india-post-logo" onload="console.log('Logo loaded successfully')" onerror="console.error('Logo failed to load')">
+                <img src="emblem-of-india.png" alt="Emblem of India" class="emblem" onload="console.log('Emblem loaded successfully')" onerror="console.error('Emblem failed to load')">
+            </div>
+        </div>
+        
+        <!-- Center Section: Department Info -->
+        <div class="header-center">
+            <div class="department-info">
+                <h1 class="department-title">Department of Posts</h1>
+                <p class="ministry-subtitle">Ministry of Communications, Government of India</p>
+            </div>
+        </div>
+        
+        <!-- Right Section: Icons -->
+        <div class="header-right">
+            <div class="header-icons">
+                <button class="icon-btn notification-btn" title="Notifications">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <div class="profile-icon" title="User Profile">
+                    <span class="profile-initials">AK</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Collapse Toggle Button -->
+        <button class="header-toggle-btn" id="headerToggleBtn" title="Collapse Header">
+            <i class="fas fa-chevron-up" id="toggleIcon"></i>
+        </button>
+    </header>
+    
+    <!-- Restore Toggle Button (Outside header so it stays visible when header is collapsed) -->
+    <button class="header-toggle-btn restore-btn" id="restoreToggleBtn" title="Restore Header" style="display: none;">
+        <i class="fas fa-chevron-down" id="restoreIcon"></i>
+    </button>
+
+    <!-- Primary Header Bar (Yellow) -->
+    <div class="primary-header">
+        <div class="primary-header-content">
+            <h2 class="welcome-text">Welcome to Taxation Module</h2>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Content will be added here later -->
+        <div class="content-placeholder">
+            <p>Main content area - Ready for dynamic content</p>
+        </div>
+    </main>
+
+    <!-- Fixed Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>Designed and Developed by PAF Wing © Copyright Department of Posts</p>
+        </div>
+    </footer>
+
+    <!-- Right Sidebar Icons -->
+    <div class="sidebar-icons">
+        <button class="sidebar-icon search-icon" title="Search">
+            <i class="fas fa-search"></i>
+        </button>
+        <button class="sidebar-icon bookmark-icon" title="Bookmarks">
+            <i class="fas fa-bookmark"></i>
+        </button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

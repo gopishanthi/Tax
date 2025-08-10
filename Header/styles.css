@@ -1,0 +1,509 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: white;
+    color: black;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* Top Header Section */
+.top-header {
+    background-color: white;
+    border-bottom: 1px solid #e0e0e0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: transform 0.3s ease;
+}
+
+.top-header.collapsed {
+    transform: translateY(-80px);
+}
+
+/* Header Toggle Button */
+.header-toggle-btn {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 25px;
+    background-color: #ffc107;
+    border: none;
+    border-radius: 0 0 8px 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
+    transition: all 0.3s ease;
+    color: black;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-toggle-btn:hover {
+    background-color: #e0a800;
+    transform: translateX(-50%) scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.header-toggle-btn.collapsed {
+    top: 0;
+    transform: translateX(-50%);
+}
+
+.header-toggle-btn.collapsed:hover {
+    transform: translateX(-50%) scale(1.05);
+}
+
+/* Restore Button Styles */
+.restore-btn {
+    background-color: #28a745 !important;
+    color: white !important;
+}
+
+.restore-btn:hover {
+    background-color: #218838 !important;
+    transform: translateX(-50%) scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Left Section: Logo and Emblem */
+.header-left {
+    display: flex;
+    align-items: center;
+    height: 80px;
+    padding-left: 24px;
+    flex-shrink: 0;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    height: 50px;
+}
+
+.india-post-logo {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
+.emblem {
+    height: 45px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
+/* Center Section: Department Info */
+.header-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 80px;
+    max-width: 1200px;
+    width: 100%;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.department-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    line-height: 1.2;
+    text-align: center;
+    pointer-events: auto;
+}
+
+.department-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: black;
+    line-height: 1.2;
+    margin: 0;
+    padding: 0;
+}
+
+.ministry-subtitle {
+    font-size: 14px;
+    color: black;
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
+    line-height: 1.2;
+}
+
+/* Right Section: Icons */
+.header-right {
+    display: flex;
+    align-items: center;
+    height: 80px;
+    padding-right: 24px;
+    flex-shrink: 0;
+}
+
+.header-icons {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-btn:hover {
+    background-color: #f0f0f0;
+}
+
+.notification-btn {
+    font-size: 18px;
+    color: black;
+}
+
+.profile-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #e0e0e0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.profile-icon:hover {
+    background-color: #d0d0d0;
+}
+
+.profile-initials {
+    font-size: 16px;
+    font-weight: bold;
+    color: black;
+}
+
+/* Primary Header Bar (Yellow) */
+.primary-header {
+    background-color: #ffc107;
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: top 0.3s ease;
+}
+
+.primary-header.header-collapsed {
+    top: 0;
+}
+
+.primary-header-content {
+    width: 100%;
+    max-width: 1200px;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.welcome-text {
+    font-size: 18px;
+    font-weight: bold;
+    color: black;
+    margin: 0;
+}
+
+/* Main Content Area */
+.main-content {
+    margin-top: 130px; /* Account for fixed header (80px) + yellow bar (50px) */
+    min-height: calc(100vh - 130px - 60px); /* Viewport height minus header and footer */
+    padding: 20px;
+    background-color: white;
+    transition: margin-top 0.3s ease;
+}
+
+.main-content.header-collapsed {
+    margin-top: 50px; /* Only account for yellow bar when header is collapsed */
+    min-height: calc(100vh - 50px - 60px);
+}
+
+.content-placeholder {
+    text-align: center;
+    color: #666;
+    font-size: 16px;
+    margin-top: 50px;
+}
+
+/* Fixed Footer */
+.footer {
+    background-color: #4b0000;
+    color: white;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.footer-content {
+    text-align: center;
+}
+
+.footer-content p {
+    font-size: 12px;
+    margin: 0;
+}
+
+/* Right Sidebar Icons */
+.sidebar-icons {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 998;
+}
+
+.sidebar-icon {
+    width: 50px;
+    height: 50px;
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #dc3545;
+    font-size: 18px;
+}
+
+.sidebar-icon:hover {
+    background-color: #e9ecef;
+    transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-left {
+        padding-left: 16px;
+    }
+    
+    .header-right {
+        padding-right: 16px;
+    }
+    
+    .header-toggle-btn {
+        width: 35px;
+        height: 22px;
+        font-size: 12px;
+    }
+    
+    .restore-btn {
+        width: 35px;
+        height: 22px;
+        font-size: 12px;
+    }
+    
+    .logo-section {
+        gap: 10px;
+    }
+    
+    .india-post-logo,
+    .emblem {
+        height: 40px;
+    }
+    
+    .department-title {
+        font-size: 16px;
+    }
+    
+    .ministry-subtitle {
+        font-size: 12px;
+    }
+    
+    .welcome-text {
+        font-size: 16px;
+    }
+    
+    .sidebar-icons {
+        right: 10px;
+    }
+    
+    .sidebar-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .top-header {
+        height: 70px;
+    }
+    
+    .top-header.collapsed {
+        transform: translateY(-70px);
+    }
+    
+    .primary-header {
+        top: 70px;
+        height: 45px;
+    }
+    
+    .primary-header.header-collapsed {
+        top: 0;
+    }
+    
+    .main-content {
+        margin-top: 115px;
+        min-height: calc(100vh - 115px - 60px);
+    }
+    
+    .main-content.header-collapsed {
+        margin-top: 45px;
+        min-height: calc(100vh - 45px - 60px);
+    }
+    
+    .header-left {
+        height: 70px;
+        padding-left: 12px;
+    }
+    
+    .header-right {
+        height: 70px;
+        padding-right: 12px;
+    }
+    
+    .header-center {
+        height: 70px;
+    }
+    
+    .logo-section {
+        gap: 8px;
+    }
+    
+    .india-post-logo,
+    .emblem {
+        height: 35px;
+    }
+    
+    .department-title {
+        font-size: 14px;
+    }
+    
+    .ministry-subtitle {
+        font-size: 11px;
+    }
+    
+    .welcome-text {
+        font-size: 14px;
+    }
+    
+    .header-icons {
+        gap: 10px;
+    }
+    
+    .profile-icon {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .profile-initials {
+        font-size: 14px;
+    }
+    
+    .sidebar-icons {
+        display: none; /* Hide on very small screens */
+    }
+    
+    .header-toggle-btn {
+        width: 30px;
+        height: 20px;
+        font-size: 11px;
+    }
+    
+    .restore-btn {
+        width: 30px;
+        height: 20px;
+        font-size: 11px;
+    }
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus styles for accessibility */
+.icon-btn:focus,
+.sidebar-icon:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+    .top-header,
+    .primary-header,
+    .footer,
+    .sidebar-icons {
+        display: none;
+    }
+    
+    .main-content {
+        margin-top: 0;
+        min-height: auto;
+    }
+} 

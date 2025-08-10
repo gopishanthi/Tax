@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taxation Module</title>
+
+  <!-- Tailwind CSS (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            dopMaroon: '#4b0000',
+            dopYellow: '#ffc107',
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Font Awesome (for 24px icons, shared with header) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- Existing Header Styles/Behavior (do not modify) -->
+  <link rel="stylesheet" href="Header/styles.css" />
+
+  <style>
+    html, body { height: 100%; }
+    body { overflow: hidden; }
+    
+    /* Parent wrapper that holds the sidebar and the main panel */
+    .main-content {
+      position: relative;
+      /* Fallback so content shows even if JS hasn't run yet */
+      height: calc(100vh - 180px); /* temp guess; JS will overwrite exactly */
+      overflow: hidden; /* keep the app scroll-free; inner panes handle their own scrolls if needed */
+    }
+    
+    /* Ensure the app shell is scroll-free within the header-managed area */
+    .tax-app { height: 100%; }
+    .no-scroll { overflow: hidden; }
+    
+    /* Debug: Force accordion content to be visible initially */
+    .accordion-content { 
+      display: block !important; /* Force display initially for debugging */
+      background-color: #f0f0f0; /* Debug background */
+      border: 1px solid red; /* Debug border */
+    }
+    
+    /* Accordion behavior: only one open at a time; keep compact spacing */
+    .accordion-item:not(.active) .accordion-content { 
+      display: none !important; /* Hide when not active */
+    }
+    
+    .accordion-item.active .accordion-content { 
+      display: block !important; /* Force display with !important */
+      background-color: white; /* Debug: change background when active */
+      border: 1px solid green; /* Debug border for active */
+    }
+    
+    /* Debug: make sure accordion items are visible */
+    .accordion-item {
+      border: 1px solid #e5e7eb;
+      margin-bottom: 2px;
+    }
+    
+    .accordion-header {
+      background-color: #f3f4f6;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    
+    .accordion-header:hover {
+      background-color: #e5e7eb;
+    }
+    
+    /* Debug: Make sure content area is visible */
+    #content {
+      background-color: #f9f9f9;
+      border: 2px solid blue;
+    }
+    
+    #itWorkspace {
+      background-color: #ffffff;
+      border: 2px solid green;
+    }
+    
+    #panel-dashboard {
+      background-color: #f0f8ff;
+      border: 2px solid orange;
+    }
+    
+    /* Ensure toggle buttons are visible */
+    .tax-app > div:first-child {
+      position: relative;
+      z-index: 20;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 8px;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Make toggle buttons more prominent */
+    #toggleIt, #toggleGst {
+      min-width: 120px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    #toggleIt:hover, #toggleGst:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body class="bg-white text-black">
+  <!-- DEBUG: Test script to see if JavaScript is working -->
+  <script>
+    console.log('HTML loaded, testing basic functionality...');
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOM loaded, checking elements...');
+      const dashboard = document.getElementById('panel-dashboard');
+      const content = document.getElementById('content');
+      const itWorkspace = document.getElementById('itWorkspace');
+      const toggleIt = document.getElementById('toggleIt');
+      const toggleGst = document.getElementById('toggleGst');
+      
+      console.log('Dashboard panel:', dashboard);
+      console.log('Content area:', content);
+      console.log('IT Workspace:', itWorkspace);
+      console.log('Toggle IT button:', toggleIt);
+      console.log('Toggle GST button:', toggleGst);
+      
+      // Test toggle button functionality
+      if (toggleIt) {
+        toggleIt.addEventListener('click', () => {
+          console.log('IT button clicked!');
+        });
+      }
+      if (toggleGst) {
+        toggleGst.addEventListener('click', () => {
+          console.log('GST button clicked!');
+        });
+      }
+      
+      // Force show dashboard content
+      if (dashboard) {
+        dashboard.classList.remove('hidden');
+        console.log('Dashboard panel shown');
+      }
+      
+      // Force show first accordion content
+      const firstAccordion = document.querySelector('.accordion-item');
+      if (firstAccordion) {
+        firstAccordion.classList.add('active');
+        console.log('First accordion item activated');
+      }
+    });
+  </script>
+  
+  <!-- Top Header Section (reused as-is) -->
+  <header class="top-header" id="topHeader">
+    <div class="header-left">
+      <div class="logo-section">
+        <img src="Header/india-post-logo.png" alt="India Post Logo" class="india-post-logo" />
+        <img src="Header/emblem-of-india.png" alt="Emblem of India" class="emblem" />
+      </div>
+    </div>
+    <div class="header-center">
+      <div class="department-info">
+        <h1 class="department-title">Department of Posts</h1>
+        <p class="ministry-subtitle">Ministry of Communications, Government of India</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-icons">
+        <button class="icon-btn notification-btn" title="Notifications">
+          <i class="fas fa-bell"></i>
+        </button>
+        <div class="profile-icon" title="User Profile">
+          <span class="profile-initials">AK</span>
+        </div>
+      </div>
+    </div>
+    <button class="header-toggle-btn" id="headerToggleBtn" title="Collapse Header">
+      <i class="fas fa-chevron-up" id="toggleIcon"></i>
+    </button>
+  </header>
+  <button class="header-toggle-btn restore-btn" id="restoreToggleBtn" title="Restore Header" style="display: none;">
+    <i class="fas fa-chevron-down" id="restoreIcon"></i>
+  </button>
+
+  <!-- Primary Header Bar (Yellow) -->
+  <div class="primary-header">
+    <div class="primary-header-content">
+      <h2 class="welcome-text">Taxation Module</h2>
+    </div>
+  </div>
+
+  <!-- Main Content Area managed by header CSS -->
+  <main class="main-content no-scroll">
+    <div class="tax-app relative w-full h-full">
+      <!-- Centered module toggles -->
+      <div class="w-full flex items-center justify-center mb-2 relative z-10">
+        <div class="inline-flex rounded border border-gray-300 overflow-hidden shadow-sm bg-white">
+          <button id="toggleIt" class="px-3 py-1.5 text-xs bg-blue-600 text-white hover:bg-blue-700">IT Returns Management</button>
+          <button id="toggleGst" class="px-3 py-1.5 text-xs bg-white hover:bg-gray-50 border-l">GST Returns Management</button>
+        </div>
+        <!-- Debug info -->
+        <div class="ml-4 text-xs text-gray-500">Toggle buttons should be visible above</div>
+      </div>
+
+      <!-- Fixed Left Sidebar -->
+      <aside id="sidebar" class="absolute inset-y-0 left-0 w-56 bg-white border-r border-gray-200 transition-all duration-200">
+        <div class="h-full flex flex-col">
+          <!-- Collapse Button -->
+          <div class="flex items-center justify-between px-2 py-1 border-b">
+            <span class="text-[10px] text-gray-600">Navigation</span>
+            <button id="sidebarToggle" class="text-gray-600 hover:text-gray-900" title="Collapse">
+              <i class="fa-solid fa-angles-left text-xl"></i>
+            </button>
+          </div>
+          <nav class="flex-1 overflow-hidden">
+            <ul id="sidebarList" class="text-xs">
+              <li data-target="dashboard" class="sidebar-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-blue-50">
+                <i class="fa-solid fa-chart-line text-[24px] text-gray-700"></i>
+                <span class="label">Dashboard</span>
+              </li>
+              <li data-target="form24q" class="sidebar-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-blue-50">
+                <i class="fa-solid fa-id-badge text-[24px] text-gray-700"></i>
+                <span class="label">Form 24Q – TDS on Salaries</span>
+              </li>
+              <li data-target="form26q" class="sidebar-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-blue-50">
+                <i class="fa-solid fa-file-invoice-dollar text-[24px] text-gray-700"></i>
+                <span class="label">Form 26Q – TDS on Non-Salaries</span>
+              </li>
+              <li data-target="form24g" class="sidebar-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-blue-50">
+                <i class="fa-solid fa-book text-[24px] text-gray-700"></i>
+                <span class="label">Form 24G – Monthly Book Adjustment (PAO)</span>
+              </li>
+              <li data-target="recon" class="sidebar-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-blue-50">
+                <i class="fa-solid fa-scale-balanced text-[24px] text-gray-700"></i>
+                <span class="label">PAO–DDO Reconciliation</span>
+              </li>
+              <li data-target="bin" class="sidebar-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-blue-50">
+                <i class="fa-solid fa-database text-[24px] text-gray-700"></i>
+                <span class="label">BIN Upload & Dissemination</span>
+              </li>
+              <li data-target="acks" class="sidebar-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-blue-50">
+                <i class="fa-solid fa-receipt text-[24px] text-gray-700"></i>
+                <span class="label">Filing Acknowledgements & History</span>
+              </li>
+              <li data-target="export" class="sidebar-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-blue-50">
+                <i class="fa-solid fa-file-export text-[24px] text-gray-700"></i>
+                <span class="label">Export Reports (Excel/PDF)</span>
+              </li>
+              <li data-target="alerts" class="sidebar-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-blue-50">
+                <i class="fa-solid fa-triangle-exclamation text-[24px] text-gray-700"></i>
+                <span class="label">Alerts & Notifications</span>
+              </li>
+              <li data-target="circulars" class="sidebar-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-blue-50">
+                <i class="fa-solid fa-folder-open text-[24px] text-gray-700"></i>
+                <span class="label">Circulars & Master Data</span>
+              </li>
+              <li data-target="help" class="sidebar-item flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-blue-50">
+                <i class="fa-solid fa-question-circle text-[24px] text-gray-700"></i>
+                <span class="label">Quick Links / Help</span>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </aside>
+
+      <!-- Content Area -->
+      <section id="content" class="absolute inset-y-0 right-0 left-56 transition-all duration-200">
+        <!-- GST Under Development Banner -->
+        <div id="gstBanner" class="hidden w-full h-full flex items-center justify-center text-sm text-gray-700">
+          <div class="px-4 py-3 border rounded bg-yellow-50 border-yellow-200">Page Under Development</div>
+        </div>
+
+        <!-- IT Returns Management Workspace -->
+        <div id="itWorkspace" class="w-full h-full p-2 overflow-hidden">
+          <!-- Tabbed header inside content for context switching between 24Q and 26Q as needed -->
+          <div class="hidden"></div>
+
+          <!-- DASHBOARD MODULE -->
+          <div id="panel-dashboard" class="module h-full">
+            <!-- DEBUG: Test div to see if content is rendering -->
+            <div class="bg-red-500 text-white p-2 mb-2 text-center font-bold">
+              DEBUG: Dashboard Panel is Loading!
+            </div>
+            
+            <div class="grid grid-cols-1 gap-2 h-full">
+              <div class="accordion text-xs bg-white border rounded">
+                <div class="accordion-item">
+                  <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-b">1. Filing Overview</button>
+                  <div class="accordion-content p-3">
+                    <div class="flex items-center gap-2 mb-2">
+                      <select class="border rounded px-2 py-1 text-xs">
+                        <option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option>
+                      </select>
+                      <select class="border rounded px-2 py-1 text-xs">
+                        <option>2024-25</option><option>2023-24</option>
+                      </select>
+                    </div>
+                    <div class="grid grid-cols-5 gap-2">
+                      <div class="border rounded p-2"><div class="font-semibold">24Q Status</div><div class="text-gray-600">Draft</div></div>
+                      <div class="border rounded p-2"><div class="font-semibold">26Q Status</div><div class="text-gray-600">Filed</div></div>
+                      <div class="border rounded p-2"><div class="font-semibold">Last Filing</div><div class="text-gray-600">Token: AB1234</div></div>
+                      <div class="border rounded p-2"><div class="font-semibold">BIN Received</div><div class="text-gray-600">Yes (PRN 98765)</div></div>
+                      <div class="border rounded p-2"><div class="font-semibold">Due Date</div><div class="text-gray-600">31 Jan <span class="ml-1 inline-block text-[10px] bg-blue-100 text-blue-700 px-1 rounded">5 days</span></div></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="accordion-item">
+                  <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">2. Reconciliation Summary</button>
+                  <div class="accordion-content p-3">
+                    <div class="mb-2 flex gap-3 text-xs">
+                      <div>Matched: <span class="font-semibold text-green-700">10</span></div>
+                      <div>Mismatched: <span class="font-semibold text-yellow-700">2</span></div>
+                      <div>Not Yet: <span class="font-semibold text-red-700">1</span></div>
+                      <div>Last: <span class="text-gray-600">12 Dec</span></div>
+                      <div>Declaration: <span class="text-red-600 font-medium">Not Submitted</span></div>
+                    </div>
+                    <div class="border rounded">
+                      <div class="grid grid-cols-5 bg-gray-50 px-2 py-1 border-b">
+                        <div>PAN</div><div>Section</div><div>TDS (IT)</div><div>TDS (Cash Book)</div><div>Status</div>
+                      </div>
+                      <div class="grid grid-cols-5 px-2 py-1 text-gray-700">
+                        <div>ABCDE1234F</div><div>192</div><div>10,000</div><div>10,000</div><div class="text-green-700">Matched</div>
+                      </div>
+                      <div class="grid grid-cols-5 px-2 py-1 text-gray-700">
+                        <div>PQRSX9999Z</div><div>194C</div><div>5,500</div><div>5,000</div><div class="text-yellow-700">Minor mismatch</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="accordion-item">
+                  <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">3. Action Center</button>
+                  <div class="accordion-content p-3">
+                    <div class="flex flex-wrap gap-2">
+                      <button class="px-2 py-1 border rounded bg-white hover:bg-gray-50">Upload IT Schedule</button>
+                      <button class="px-2 py-1 border rounded bg-white hover:bg-gray-50">Upload Accounting Abstract</button>
+                      <button class="px-2 py-1 border rounded bg-white hover:bg-gray-50">Launch Reconciliation Tool</button>
+                      <button id="openDeclaration" class="px-2 py-1 border rounded bg-white hover:bg-gray-50">Certify & Declare</button>
+                      <button class="px-2 py-1 border rounded bg-white hover:bg-gray-50">Send to PAO</button>
+                      <button class="px-2 py-1 border rounded bg-white hover:bg-gray-50">File Return</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="accordion-item">
+                  <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-t">4. Alerts & Notifications</button>
+                  <div class="accordion-content p-3">
+                    <ul class="list-disc ml-4 space-y-1 text-gray-700">
+                      <li>BIN not quoted</li>
+                      <li>Return not filed</li>
+                      <li>Reconciliation overdue</li>
+                      <li>Declaration not submitted</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PAO ROLE PANELS (compact) -->
+              <div class="accordion text-xs bg-white border rounded">
+                <div class="accordion-item">
+                  <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-b">PAO: Circle Summary</button>
+                  <div class="accordion-content p-3">
+                    <div class="grid grid-cols-6 gap-2">
+                      <div class="border rounded p-2">Total DDOs: <span class="font-semibold">42</span></div>
+                      <div class="border rounded p-2">Submitted (M): <span class="font-semibold">30</span></div>
+                      <div class="border rounded p-2">Filed 24Q/26Q: <span class="font-semibold">26</span></div>
+                      <div class="border rounded p-2">Reconciled: <span class="font-semibold">21</span></div>
+                      <div class="border rounded p-2">24G Filed: <span class="font-semibold text-green-700">Yes</span></div>
+                      <div class="border rounded p-2">BINs Generated: <span class="font-semibold">118</span></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">PAO: DDO-wise Compliance</button>
+                  <div class="accordion-content p-3">
+                    <div class="flex gap-2 mb-2">
+                      <select class="border rounded px-2 py-1 text-xs"><option>Q1</option><option>Q2</option></select>
+                      <select class="border rounded px-2 py-1 text-xs"><option>All Status</option></select>
+                    </div>
+                    <div class="border rounded">
+                      <div class="grid grid-cols-7 bg-gray-50 px-2 py-1 border-b">
+                        <div>DDO</div><div>TAN</div><div>24Q/26Q</div><div>Recon</div><div>Declaration</div><div>BIN</div><div>Last</div>
+                      </div>
+                      <div class="grid grid-cols-7 px-2 py-1 text-gray-700">
+                        <div>DDO A</div><div>ABCDE12345F</div><div>Filed</div><div>Done</div><div>Yes</div><div>Y</div><div>01 Dec</div>
+                      </div>
+                    </div>
+                    <div class="mt-2 flex gap-2">
+                      <button class="px-2 py-1 border rounded">View Details</button>
+                      <button class="px-2 py-1 border rounded">Send Reminder</button>
+                      <button class="px-2 py-1 border rounded">Export</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">PAO: Heatmap / Badges</button>
+                  <div class="accordion-content p-3">
+                    <div class="flex gap-2 text-[10px]">
+                      <span class="px-2 py-1 rounded bg-green-100 text-green-800">Compliant</span>
+                      <span class="px-2 py-1 rounded bg-yellow-100 text-yellow-800">In Progress</span>
+                      <span class="px-2 py-1 rounded bg-red-100 text-red-800">Delayed</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">PAO: BIN & 24G Monitoring</button>
+                  <div class="accordion-content p-3">
+                    <div class="grid grid-cols-4 gap-2">
+                      <div class="border rounded p-2">24G: Filed</div>
+                      <div class="border rounded p-2">PRN: 112233</div>
+                      <div class="border rounded p-2">BINs: <button class="underline">Download</button></div>
+                      <div class="border rounded p-2">Dissemination: Yes</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="accordion-item">
+                  <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-t">PAO: Alerts</button>
+                  <div class="accordion-content p-3">
+                    <ul class="list-disc ml-4 space-y-1 text-gray-700">
+                      <li>DDO filed return without reconciliation</li>
+                      <li>Declaration pending from DDOs</li>
+                      <li>Monthly due dates crossed</li>
+                      <li>24G not filed for March</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FORM 24Q MODULE -->
+          <div id="panel-form24q" class="module hidden h-full">
+            <div class="h-full overflow-hidden">
+              <div class="text-center text-sm font-semibold mb-2">Form 24Q – TDS on Salaries & Pension</div>
+              <div class="grid grid-cols-2 gap-2 h-[calc(100%-1.5rem)]">
+                <!-- 1. Quarterly Filing -->
+                <div class="accordion text-xs bg-white border rounded h-full">
+                  <div class="accordion-item active">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-b">1. Quarterly Filing (DDO)</button>
+                    <div class="accordion-content p-3">
+                      <div class="flex gap-2 mb-2">
+                        <select class="border rounded px-2 py-1 text-xs"><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option></select>
+                        <select class="border rounded px-2 py-1 text-xs"><option>2024-25</option><option>2023-24</option></select>
+                      </div>
+                      <div class="grid grid-cols-3 gap-2 mb-2">
+                        <input class="border rounded px-2 py-1" placeholder="TAN" value="ABCDE12345F" />
+                        <select class="border rounded px-2 py-1"><option>Draft</option><option>Submitted</option><option>Revised</option></select>
+                        <input class="border rounded px-2 py-1" placeholder="Contact (DDO)" />
+                      </div>
+                      <div class="flex gap-2 mb-2">
+                        <button class="px-2 py-1 border rounded">Download RPU Template</button>
+                        <button class="px-2 py-1 border rounded">Upload PAN-wise Deductee Data</button>
+                      </div>
+                      <div class="border rounded mb-2">
+                        <div class="grid grid-cols-6 bg-gray-50 px-2 py-1 border-b">
+                          <div>PAN</div><div>Name</div><div>Section</div><div>Payment</div><div>Amount</div><div>TDS</div>
+                        </div>
+                        <div class="grid grid-cols-6 px-2 py-1 text-gray-700">
+                          <div>ABCDE1234F</div><div>John</div><div>192</div><div>Salary</div><div>50000</div><div>5000</div>
+                        </div>
+                      </div>
+                      <div class="flex gap-2 items-center">
+                        <button class="px-2 py-1 border rounded">Validate with FVU</button>
+                        <input type="file" class="text-xs" />
+                        <button class="px-2 py-1 border rounded">Submit to TIN-FC / TRACES</button>
+                        <span class="text-gray-600">Acknowledgement / Token No.</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">2. BIN Integration (24G)</button>
+                    <div class="accordion-content p-3">
+                      <div class="border rounded">
+                        <div class="grid grid-cols-4 bg-gray-50 px-2 py-1 border-b">
+                          <div>BIN</div><div>PRN</div><div>Voucher Date</div><div>DDO Serial</div>
+                        </div>
+                        <div class="grid grid-cols-4 px-2 py-1 text-gray-700">
+                          <div>BIN001</div><div>112233</div><div>05-May</div><div>07</div>
+                        </div>
+                      </div>
+                      <div class="mt-2 flex items-center gap-2">
+                        <button class="px-2 py-1 border rounded">Attach BIN to Deductee Data</button>
+                        <span class="text-red-600">If BIN missing, contact PAO</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">3. Correction Filing</button>
+                    <div class="accordion-content p-3">
+                      <div class="border rounded mb-2">
+                        <div class="grid grid-cols-3 bg-gray-50 px-2 py-1 border-b">
+                          <div>Quarter</div><div>Token</div><div>Status</div>
+                        </div>
+                        <div class="grid grid-cols-3 px-2 py-1 text-gray-700">
+                          <div>Q2</div><div>TK123</div><div>Filed</div>
+                        </div>
+                      </div>
+                      <div class="flex gap-2 items-center">
+                        <button class="px-2 py-1 border rounded">File Correction Return</button>
+                        <input type="file" class="text-xs" />
+                      </div>
+                      <div class="mt-2 text-gray-700">Common corrections: PAN, TDS, BIN mismatch</div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">4. PAO Monitoring</button>
+                    <div class="accordion-content p-3">
+                      <div class="border rounded">
+                        <div class="grid grid-cols-5 bg-gray-50 px-2 py-1 border-b">
+                          <div>DDO</div><div>TAN</div><div>Status</div><div>Last Filing</div><div>BIN</div>
+                        </div>
+                        <div class="grid grid-cols-5 px-2 py-1 text-gray-700">
+                          <div>DDO A</div><div>ABCDE12345F</div><div>24Q Filed</div><div>20 Dec</div><div>Y</div>
+                        </div>
+                      </div>
+                      <div class="mt-2 flex gap-2">
+                        <button class="px-2 py-1 border rounded">Send Reminder to DDO</button>
+                        <span class="text-red-600">Alert: BIN not quoted by DDO B</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">5. Due Dates & Compliance</button>
+                    <div class="accordion-content p-3">
+                      <div class="grid grid-cols-4 gap-2 text-gray-700">
+                        <div>Q1: 31 Jul</div><div>Q2: 31 Oct</div><div>Q3: 31 Jan</div><div>Q4: 31 May</div>
+                      </div>
+                      <div class="mt-1 text-red-700">Penalty: ₹200/day (234E). Returns without BIN will be defective.</div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-t">6. Help & Downloads</button>
+                    <div class="accordion-content p-3">
+                      <div class="flex flex-wrap gap-2">
+                        <button class="px-2 py-1 border rounded">RPU Utility</button>
+                        <button class="px-2 py-1 border rounded">FVU Validator</button>
+                        <button class="px-2 py-1 border rounded">Sample CSV</button>
+                        <a class="px-2 py-1 border rounded underline" href="#" target="_blank" rel="noopener">TRACES Login</a>
+                        <button class="px-2 py-1 border rounded">PDF Guide</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2nd column placeholder to keep grid compact -->
+              <div class="border rounded p-3 text-xs">
+                <div class="font-semibold mb-2">Notes</div>
+                <p class="text-gray-700">Use the accordions to manage filing lifecycle. Uploads are simulated.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- FORM 26Q MODULE -->
+          <div id="panel-form26q" class="module hidden h-full">
+            <div class="h-full overflow-hidden">
+              <div class="text-center text-sm font-semibold mb-2">Form 26Q – TDS on Vendor, CBS, PLI</div>
+              <div class="grid grid-cols-2 gap-2 h-[calc(100%-1.5rem)]">
+                <!-- mirror of 24Q panels with minor label differences -->
+                <div class="accordion text-xs bg-white border rounded h-full">
+                  <div class="accordion-item active">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-b">1. Quarterly Filing (DDO)</button>
+                    <div class="accordion-content p-3">
+                      <div class="flex gap-2 mb-2">
+                        <select class="border rounded px-2 py-1 text-xs"><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option></select>
+                        <select class="border rounded px-2 py-1 text-xs"><option>2024-25</option><option>2023-24</option></select>
+                      </div>
+                      <div class="grid grid-cols-3 gap-2 mb-2">
+                        <input class="border rounded px-2 py-1" placeholder="TAN" value="ABCDE12345F" />
+                        <select class="border rounded px-2 py-1"><option>Draft</option><option>Submitted</option><option>Revised</option></select>
+                        <input class="border rounded px-2 py-1" placeholder="Contact (DDO)" />
+                      </div>
+                      <div class="flex gap-2 mb-2">
+                        <button class="px-2 py-1 border rounded">Download RPU Template</button>
+                        <button class="px-2 py-1 border rounded">Upload PAN-wise Deductee Data</button>
+                      </div>
+                      <div class="border rounded mb-2">
+                        <div class="grid grid-cols-6 bg-gray-50 px-2 py-1 border-b">
+                          <div>PAN</div><div>Name</div><div>Section</div><div>Payment</div><div>Amount</div><div>TDS</div>
+                        </div>
+                        <div class="grid grid-cols-6 px-2 py-1 text-gray-700">
+                          <div>ABCDE1234F</div><div>Vendor A</div><div>194C</div><div>Contract</div><div>250000</div><div>25000</div>
+                        </div>
+                      </div>
+                      <div class="flex gap-2 items-center">
+                        <button class="px-2 py-1 border rounded">Validate with FVU</button>
+                        <input type="file" class="text-xs" />
+                        <button class="px-2 py-1 border rounded">Submit to TIN-FC / TRACES</button>
+                        <span class="text-gray-600">Acknowledgement / Token No.</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">2. BIN Integration (24G)</button>
+                    <div class="accordion-content p-3">
+                      <div class="border rounded">
+                        <div class="grid grid-cols-4 bg-gray-50 px-2 py-1 border-b">
+                          <div>BIN</div><div>PRN</div><div>Voucher Date</div><div>DDO Serial</div>
+                        </div>
+                        <div class="grid grid-cols-4 px-2 py-1 text-gray-700">
+                          <div>BIN121</div><div>447799</div><div>08-Aug</div><div>03</div>
+                        </div>
+                      </div>
+                      <div class="mt-2 flex items-center gap-2">
+                        <button class="px-2 py-1 border rounded">Attach BIN to Deductee Data</button>
+                        <span class="text-red-600">If BIN missing, contact PAO</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">3. Correction Filing</button>
+                    <div class="accordion-content p-3">
+                      <div class="border rounded mb-2">
+                        <div class="grid grid-cols-3 bg-gray-50 px-2 py-1 border-b">
+                          <div>Quarter</div><div>Token</div><div>Status</div>
+                        </div>
+                        <div class="grid grid-cols-3 px-2 py-1 text-gray-700">
+                          <div>Q3</div><div>TK789</div><div>Filed</div>
+                        </div>
+                      </div>
+                      <div class="flex gap-2 items-center">
+                        <button class="px-2 py-1 border rounded">File Correction Return</button>
+                        <input type="file" class="text-xs" />
+                      </div>
+                      <div class="mt-2 text-gray-700">Common corrections: PAN, TDS, BIN mismatch</div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">4. PAO Monitoring</button>
+                    <div class="accordion-content p-3">
+                      <div class="border rounded">
+                        <div class="grid grid-cols-5 bg-gray-50 px-2 py-1 border-b">
+                          <div>DDO</div><div>TAN</div><div>Status</div><div>Last Filing</div><div>BIN</div>
+                        </div>
+                        <div class="grid grid-cols-5 px-2 py-1 text-gray-700">
+                          <div>DDO C</div><div>FGHIJ67890K</div><div>26Q Draft</div><div>04 Jan</div><div>N</div>
+                        </div>
+                      </div>
+                      <div class="mt-2 flex gap-2">
+                        <button class="px-2 py-1 border rounded">Send Reminder to DDO</button>
+                        <span class="text-red-600">Alert: BIN not quoted</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">5. Due Dates & Compliance</button>
+                    <div class="accordion-content p-3">
+                      <div class="grid grid-cols-4 gap-2 text-gray-700">
+                        <div>Q1: 31 Jul</div><div>Q2: 31 Oct</div><div>Q3: 31 Jan</div><div>Q4: 31 May</div>
+                      </div>
+                      <div class="mt-1 text-red-700">Penalty: ₹200/day (234E). Returns without BIN will be defective.</div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-t">6. Help & Downloads</button>
+                    <div class="accordion-content p-3">
+                      <div class="flex flex-wrap gap-2">
+                        <button class="px-2 py-1 border rounded">RPU Utility</button>
+                        <button class="px-2 py-1 border rounded">FVU Validator</button>
+                        <button class="px-2 py-1 border rounded">Sample CSV</button>
+                        <a class="px-2 py-1 border rounded underline" href="#" target="_blank" rel="noopener">TRACES Login</a>
+                        <button class="px-2 py-1 border rounded">PDF Guide</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="border rounded p-3 text-xs">
+                  <div class="font-semibold mb-2">Notes</div>
+                  <p class="text-gray-700">Use the accordions to manage filing lifecycle. Uploads are simulated.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FORM 24G MODULE -->
+          <div id="panel-form24g" class="module hidden h-full">
+            <div class="h-full overflow-hidden">
+              <div class="text-center text-sm font-semibold mb-2">Form 24G – Book Adjustment TDS Filing</div>
+              <div class="grid grid-cols-2 gap-2 h-[calc(100%-1.5rem)]">
+                <div class="accordion text-xs bg-white border rounded h-full">
+                  <div class="accordion-item active">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-b">1. Form Preparation (PAO)</button>
+                    <div class="accordion-content p-3">
+                      <div class="flex gap-2 mb-2">
+                        <select class="border rounded px-2 py-1 text-xs"><option>March 2025</option><option>Feb 2025</option></select>
+                        <input class="border rounded px-2 py-1" placeholder="AIN" value="AIN123456" />
+                      </div>
+                      <div class="grid grid-cols-4 gap-2 mb-2">
+                        <input class="border rounded px-2 py-1" placeholder="AO Name" />
+                        <input class="border rounded px-2 py-1" placeholder="Ministry/Department" />
+                        <input class="border rounded px-2 py-1" placeholder="Contact" />
+                        <button class="px-2 py-1 border rounded">Generate Form 24G</button>
+                      </div>
+                      <div class="border rounded">
+                        <div class="grid grid-cols-5 bg-gray-50 px-2 py-1 border-b">
+                          <div>TAN</div><div>DDO Name</div><div>Type</div><div>Amount</div><div>Actions</div>
+                        </div>
+                        <div class="grid grid-cols-5 px-2 py-1 text-gray-700">
+                          <div>ABCDE12345F</div><div>DDO A</div><div>Salary</div><div>1,50,000</div><div><button class="underline">Edit</button></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">2. FVU Upload & Submission</button>
+                    <div class="accordion-content p-3">
+                      <div class="flex gap-2 items-center">
+                        <input type="file" class="text-xs" />
+                        <input class="border rounded px-2 py-1" placeholder="PRN (Ack No)" />
+                        <label class="flex items-center gap-1"><input type="radio" name="upload24g" checked /> <span>TIN-FC</span></label>
+                        <label class="flex items-center gap-1"><input type="radio" name="upload24g" /> <span>Online</span></label>
+                        <button class="px-2 py-1 border rounded">Submit to TIN-FC</button>
+                        <span class="text-yellow-700">FVU Validation Pending</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">3. BIN Generation & Dissemination</button>
+                    <div class="accordion-content p-3">
+                      <div class="flex items-center gap-2 mb-2">
+                        <select class="border rounded px-2 py-1 text-xs"><option>All Months</option></select>
+                        <button class="px-2 py-1 border rounded">Disseminate BIN to DDOs</button>
+                        <span class="text-green-700">BINs auto-emailed to DDOs from system</span>
+                      </div>
+                      <div class="border rounded">
+                        <div class="grid grid-cols-3 bg-gray-50 px-2 py-1 border-b">
+                          <div>PRN</div><div>DDO Serial</div><div>TV Date</div>
+                        </div>
+                        <div class="grid grid-cols-3 px-2 py-1 text-gray-700">
+                          <div>112233</div><div>07</div><div>05-May</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">4. Due Dates & Penalties</button>
+                    <div class="accordion-content p-3">
+                      <div class="text-gray-700">March: 30 Apr, Others: 15 days from month-end</div>
+                      <div class="text-red-700">Penalty: ₹100/day (272A(2)(m)) – max up to TDS amount</div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-t">5. Instructions & Downloads</button>
+                    <div class="accordion-content p-3">
+                      <div class="flex flex-wrap gap-2">
+                        <button class="px-2 py-1 border rounded">24G RPU (NSDL)</button>
+                        <button class="px-2 py-1 border rounded">FVU Validator</button>
+                        <div class="text-gray-700">AIN application process mentioned here.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="border rounded p-3 text-xs">
+                  <div class="font-semibold mb-2">Notes</div>
+                  <p class="text-gray-700">Role-aware visibility: DDOs won’t see AIN fields; PAOs won’t see TAN update forms.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RECONCILIATION MODULE -->
+          <div id="panel-recon" class="module hidden h-full">
+            <div class="h-full overflow-hidden">
+              <div class="text-center text-sm font-semibold mb-2">TDS Reconciliation – DDO Accounting vs IT Schedules</div>
+              <div class="grid grid-cols-2 gap-2 h-[calc(100%-1.5rem)]">
+                <div class="accordion text-xs bg-white border rounded h-full">
+                  <div class="accordion-item active">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-b">1. File Uploads</button>
+                    <div class="accordion-content p-3">
+                      <div class="mb-2">Upload PAN-wise IT Schedule (CSV/Excel)</div>
+                      <input type="file" class="text-xs mb-2" />
+                      <div class="mb-2">Upload Accounting Abstract (Cash Book/DTR)</div>
+                      <input type="file" class="text-xs" />
+                      <div class="mt-2 text-gray-700">Files loaded: 0</div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">2. Reconciliation Summary</button>
+                    <div class="accordion-content p-3">
+                      <div class="flex gap-2 mb-2">
+                        <button class="px-2 py-1 border rounded">All</button>
+                        <button class="px-2 py-1 border rounded">Matched</button>
+                        <button class="px-2 py-1 border rounded">Mismatched</button>
+                      </div>
+                      <div class="border rounded">
+                        <div class="grid grid-cols-6 bg-gray-50 px-2 py-1 border-b">
+                          <div>PAN</div><div>Section</div><div>TDS (IT)</div><div>TDS (CB)</div><div>Diff</div><div>Status</div>
+                        </div>
+                        <div class="grid grid-cols-6 px-2 py-1 text-gray-700">
+                          <div>ABCDE1234F</div><div>192</div><div>10,000</div><div>10,000</div><div>0</div><div class="text-green-700">Matched</div>
+                        </div>
+                      </div>
+                      <div class="mt-2 text-gray-700">Counts: Total 12, Matched 10, Mismatched 2</div>
+                      <button class="mt-2 px-2 py-1 border rounded">Export CSV</button>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-y">3. Period & Status</button>
+                    <div class="accordion-content p-3">
+                      <div class="flex gap-2 mb-2">
+                        <select class="border rounded px-2 py-1 text-xs"><option>Month</option></select>
+                        <select class="border rounded px-2 py-1 text-xs"><option>Year</option></select>
+                        <select class="border rounded px-2 py-1 text-xs"><option>Quarter</option></select>
+                      </div>
+                      <div class="text-red-700">Reconciliation Pending</div>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button class="accordion-header w-full text-left px-3 py-2 bg-gray-50 border-t">4. Help & Reference</button>
+                    <div class="accordion-content p-3">
+                      <ul class="list-disc ml-4 space-y-1 text-gray-700">
+                        <li>Guide: Generate IT Schedule</li>
+                        <li>Sample Cash Book abstract</li>
+                        <li>SOP for reconciliation</li>
+                        <li>Compliance note: Mandatory before 24G and 24Q/26Q</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div class="border rounded p-3 text-xs">
+                  <div class="font-semibold mb-2">Declaration</div>
+                  <button id="openDeclaration2" class="px-2 py-1 border rounded">Open Declaration</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BIN MODULE -->
+          <div id="panel-bin" class="module hidden h-full">
+            <div class="h-full overflow-hidden p-2 text-xs">
+              <div class="border rounded">
+                <div class="grid grid-cols-5 bg-gray-50 px-2 py-1 border-b">
+                  <div>DDO</div><div>PRN</div><div>Voucher Date</div><div>Status</div><div>Actions</div>
+                </div>
+                <div class="grid grid-cols-5 px-2 py-1 text-gray-700">
+                  <div>DDO A</div><div>112233</div><div>05-May</div><div>Sent</div><div><button class="underline">Resend</button></div>
+                </div>
+              </div>
+              <div class="mt-2">
+                <button class="px-2 py-1 border rounded">Upload BINs</button>
+                <span class="ml-2 text-gray-700">Auto-download log available</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACKS MODULE -->
+          <div id="panel-acks" class="module hidden h-full">
+            <div class="h-full overflow-hidden p-2 text-xs">
+              <div class="border rounded">
+                <div class="grid grid-cols-6 bg-gray-50 px-2 py-1 border-b">
+                  <div>Form</div><div>Period</div><div>Token/PRN</div><div>Date</div><div>BIN</div><div>Actions</div>
+                </div>
+                <div class="grid grid-cols-6 px-2 py-1 text-gray-700">
+                  <div>24Q</div><div>Q2</div><div>TK123</div><div>20 Dec</div><div>Y</div><div><button class="underline">Export</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- EXPORT MODULE -->
+          <div id="panel-export" class="module hidden h-full">
+            <div class="h-full overflow-hidden p-2 text-xs">
+              <div class="grid grid-cols-3 gap-2">
+                <div class="border rounded p-2">
+                  <div class="font-semibold mb-1">BIN Status</div>
+                  <button class="px-2 py-1 border rounded">Download XLSX</button>
+                </div>
+                <div class="border rounded p-2">
+                  <div class="font-semibold mb-1">Filing Status (All DDOs)</div>
+                  <button class="px-2 py-1 border rounded">Download PDF</button>
+                </div>
+                <div class="border rounded p-2">
+                  <div class="font-semibold mb-1">Reconciliation Summary</div>
+                  <button class="px-2 py-1 border rounded">Download CSV</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ALERTS MODULE -->
+          <div id="panel-alerts" class="module hidden h-full">
+            <div class="h-full overflow-hidden p-2 text-xs">
+              <ul class="list-disc ml-4 space-y-1 text-gray-700">
+                <li>Missed filing deadline</li>
+                <li>Reconciliation overdue</li>
+                <li>BIN not quoted</li>
+                <li>Declaration missing</li>
+              </ul>
+              <div class="mt-2"><button class="px-2 py-1 border rounded">Mark as acknowledged</button></div>
+            </div>
+          </div>
+
+          <!-- CIRCULARS MODULE -->
+          <div id="panel-circulars" class="module hidden h-full">
+            <div class="h-full overflow-hidden p-2 text-xs">
+              <div class="mb-2"><input class="border rounded px-2 py-1 w-64" placeholder="Search..." /></div>
+              <div class="border rounded">
+                <div class="grid grid-cols-3 bg-gray-50 px-2 py-1 border-b">
+                  <div>Title</div><div>Type</div><div>Date</div>
+                </div>
+                <div class="grid grid-cols-3 px-2 py-1 text-gray-700">
+                  <div>TDS Rules 2024</div><div>Master Data</div><div>02 Jan</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- HELP MODULE -->
+          <div id="panel-help" class="module hidden h-full">
+            <div class="h-full overflow-hidden p-2 text-xs">
+              <div class="grid grid-cols-2 gap-2">
+                <div class="border rounded p-2">
+                  <div class="font-semibold mb-1">Downloads</div>
+                  <ul class="list-disc ml-4 space-y-1 text-gray-700">
+                    <li>RPU Utility</li>
+                    <li>FVU Validator</li>
+                    <li>Sample templates</li>
+                  </ul>
+                </div>
+                <div class="border rounded p-2">
+                  <div class="font-semibold mb-1">External Links</div>
+                  <ul class="list-disc ml-4 space-y-1 text-blue-700">
+                    <li><a href="#" class="underline">TRACES</a></li>
+                    <li><a href="#" class="underline">TIN-NSDL</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Declaration Modal -->
+      <div id="declarationModal" class="hidden absolute inset-0 bg-black/40 items-center justify-center">
+        <div class="bg-white rounded shadow p-3 w-[520px] text-xs">
+          <div class="font-semibold mb-2">DDO Declaration – Certification of Reconciliation</div>
+          <div class="space-y-1 text-gray-800">
+            <p>All PAN-wise TDS entries have been accurately reconciled with Cash Book/DTR.</p>
+            <p>The data submitted for this period is correct and complete.</p>
+          </div>
+          <div class="mt-2 flex items-center gap-2">
+            <input id="agreeDecl" type="checkbox" />
+            <label for="agreeDecl">I agree and certify the above.</label>
+          </div>
+          <div class="mt-2 grid grid-cols-2 gap-2">
+            <input class="border rounded px-2 py-1" placeholder="Name of DDO" />
+            <input class="border rounded px-2 py-1" value="Date: Auto" readonly />
+          </div>
+          <div class="mt-3 flex justify-end gap-2">
+            <button id="cancelDecl" class="px-2 py-1 border rounded">Cancel</button>
+            <button id="confirmDecl" class="px-2 py-1 border rounded bg-blue-600 text-white disabled:opacity-50" disabled>Confirm & Submit</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Fixed Footer (reused as-is) -->
+  <footer class="footer">
+    <div class="footer-content">
+      <p>Designed and Developed by PAF Wing © Copyright Department of Posts</p>
+    </div>
+  </footer>
+
+  <!-- Right Sidebar Icons (header feature) -->
+  <div class="sidebar-icons">
+    <button class="sidebar-icon search-icon" title="Search">
+      <i class="fas fa-search"></i>
+    </button>
+    <button class="sidebar-icon bookmark-icon" title="Bookmarks">
+      <i class="fas fa-bookmark"></i>
+    </button>
+  </div>
+
+  <!-- Header behavior script (do not modify) -->
+  <script src="Header/script.js" defer></script>
+  <!-- App behavior script -->
+  <script src="app.js" defer></script>
+</body>
+</html>
+
+

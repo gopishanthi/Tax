@@ -1,0 +1,40 @@
+<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="100" height="100" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/>
+  
+  <!-- Simplified Lion Capital of Ashoka -->
+  <!-- Base/Lotus -->
+  <ellipse cx="50" cy="85" rx="25" ry="8" fill="#343a40"/>
+  
+  <!-- Abacus -->
+  <rect x="30" y="60" width="40" height="8" fill="#343a40"/>
+  
+  <!-- Dharma Chakra (simplified) -->
+  <circle cx="50" cy="64" r="3" fill="#343a40"/>
+  <circle cx="50" cy="64" r="1" fill="#f8f9fa"/>
+  
+  <!-- Horse (simplified) -->
+  <ellipse cx="35" cy="64" rx="4" ry="2" fill="#343a40"/>
+  
+  <!-- Bull (simplified) -->
+  <ellipse cx="65" cy="64" rx="4" ry="2" fill="#343a40"/>
+  
+  <!-- Lions (simplified - showing 3 visible lions) -->
+  <!-- Central lion -->
+  <circle cx="50" cy="45" r="8" fill="#343a40"/>
+  <circle cx="50" cy="45" r="4" fill="#f8f9fa"/>
+  
+  <!-- Left lion -->
+  <ellipse cx="35" cy="45" rx="6" ry="8" fill="#343a40"/>
+  <ellipse cx="35" cy="45" rx="3" ry="4" fill="#f8f9fa"/>
+  
+  <!-- Right lion -->
+  <ellipse cx="65" cy="45" rx="6" ry="8" fill="#343a40"/>
+  <ellipse cx="65" cy="45" rx="3" ry="4" fill="#f8f9fa"/>
+  
+  <!-- Motto: सत्यमेव जयते -->
+  <text x="50" y="95" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#343a40" text-anchor="middle">सत्यमेव जयते</text>
+  
+  <!-- Placeholder text -->
+  <text x="50" y="15" font-family="Arial, sans-serif" font-size="6" fill="#6c757d" text-anchor="middle">Emblem of India</text>
+</svg> 
